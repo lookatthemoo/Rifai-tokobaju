@@ -10,8 +10,27 @@ export default function OrdersManager() {
   const refresh = () => setOrders(DB.getOrders());
   useEffect(refresh, []);
 
-  function handleStatusChange(id, status) {
-    DB.updateOrderStatus(id, status);
+  function handleStatusChange(id, newStatus) {
+    const order = DB.getOrder(id);
+    if (!order) return;
+    const oldStatus = order.status;
+
+    if (newStatus === 'selesai' && oldStatus !== 'selesai' && !order.transactionId) {
+      const transaction = DB.addTransaction({
+        tipe: 'pemasukan',
+        jumlah: order.total,
+        kategori: 'Penjualan',
+        keterangan: `Order ${order.id} - ${order.customer}`
+      });
+      DB.updateOrderTransaction(id, transaction.id);
+    }
+
+    if (oldStatus === 'selesai' && newStatus !== 'selesai' && order.transactionId) {
+      DB.deleteTransaction(order.transactionId);
+      DB.updateOrderTransaction(id, null);
+    }
+
+    DB.updateOrderStatus(id, newStatus);
     refresh();
   }
 

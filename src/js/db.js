@@ -107,6 +107,15 @@ export const DB = {
     return orders[idx];
   },
 
+  updateOrderTransaction(id, transactionId) {
+    const orders = this.getOrders();
+    const idx = orders.findIndex(o => o.id === id);
+    if (idx === -1) return null;
+    orders[idx].transactionId = transactionId || undefined;
+    _set('orders', orders);
+    return orders[idx];
+  },
+
   deleteOrder(id) {
     _set('orders', this.getOrders().filter(o => o.id !== id));
   },
